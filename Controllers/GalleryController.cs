@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
 [ApiController]
-[Route("[controller]")]
+[Route("api/gallery")]
 public class GalleryController : ControllerBase
 {
     public static List<Gallery> Galleries = new List<Gallery> { 
