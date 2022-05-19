@@ -1,0 +1,88 @@
+﻿1) добиться нормального ip на вм
+
+2) установить дот нет 20.04
+
+3)
+mkdir ~/app
+
+4)
+cd ~/app
+
+5)
+sudo git clone https://github.com/o-da-oxy/gallery-api.git
+
+6)
+cd gallery-api
+
+7)
+sudo dotnet publish -c Release -o /var/www/app
+
+8)
+cd /
+
+9)
+sudo chmod -R 755 /var/www/app
+
+10) открыть файл сервиса для редактирования
+sudo nano /ets/systmd/system/GalleryApi.service
+
+[Unit]
+Description=daemon
+
+[Service]
+ExecStart=/usr/bin/dotnet /var/www/app/GalleryApi.dll
+SyslogIdentifier=GalleryApi
+User=oksana
+Restart=always     
+RestartSec=5
+Environment=DOTNET_ROOT=/usr/lib64/dotnet
+
+[Install]
+WantedBy=multi-user.target
+
+11) перезагрузить демонов
+sudo systemctl daemon-reload
+
+12) стартануть сервис
+sudo systemctl start GalleryApi.service
+
+13) открыть файл конфига nginx и написать имя юзера
+sudo nano /etc/nginx/nginx.conf
+
+14) слушает порт 80 и перенаправляет на 5000 (файл настройки сервера)
+sudo nano /etc/nginx/sites-available/default
+
+server {
+    listen        80;
+    server_name   example.com *.example.com;
+    location / {
+        proxy_pass         http://127.0.0.1:5000;
+        proxy_http_version 1.1;
+        proxy_set_header   Upgrade $http_upgrade;
+        proxy_set_header   Connection keep-alive;
+        proxy_set_header   Host $host;
+        proxy_cache_bypass $http_upgrade;
+        proxy_set_header   X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header   X-Forwarded-Proto $scheme;
+    }
+}
+
+15) проверка корректности nginx
+sudo nginx -t
+
+16) перезагрузить nginx
+sudo nginx -s reload
+
+17) проверить статус сервиса
+sudo systemctl status GalleryApi.service
+
+	если не активен:
+		sudo systemctl daemon-reload
+		sudo systemctl start GalleryApi
+
+18) айпи пишем в браузере
+ip addr show
+
+111.111.11.11/health
+111.111.11.11/api/gallery
+111.111.11.11/api/picture
